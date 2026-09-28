@@ -1,1 +1,194 @@
-# captainmitch10.github.io
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Akta Laboratorium Historii</title>
+<style>
+:root{
+  --bg:#f2e8d5; --panel:#fffaf0; --ink:#3a2c1a; --accent:#8b1e1e; --gold:#a9822c;
+  --locked:#d8cbae; --unlocked:#e9f5e6; --border:#b8a06a;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#241d13; --panel:#332918; --ink:#f0e6d0; --locked:#463a24; --unlocked:#2f4530; --border:#6b5a34; }
+}
+:root[data-theme="dark"]{ --bg:#241d13; --panel:#332918; --ink:#f0e6d0; --locked:#463a24; --unlocked:#2f4530; --border:#6b5a34; }
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;padding:16px;max-width:640px;margin-inline:auto;}
+h1{font-size:1.3rem;text-align:center;margin:8px 0 2px;letter-spacing:1px;cursor:pointer;user-select:none;}
+.sub{text-align:center;font-size:.85rem;opacity:.75;margin-bottom:14px;}
+.stamp{display:block;text-align:center;font-size:.7rem;color:var(--accent);border:1px solid var(--accent);width:fit-content;margin:0 auto 14px;padding:2px 8px;border-radius:3px;transform:rotate(-2deg);}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;}
+.entry{display:flex;gap:8px;}
+input[type=text]{flex:1;padding:10px;font-size:1rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--ink);text-transform:uppercase;}
+button{padding:10px 14px;font-size:.95rem;border:none;border-radius:6px;background:var(--accent);color:#fff;cursor:pointer;}
+button:active{opacity:.8;}
+.msg{min-height:1.4em;margin-top:8px;font-size:.9rem;text-align:center;}
+.msg.ok{color:#2f6b2f;}
+.msg.err{color:var(--accent);}
+.progress{text-align:center;font-size:.9rem;margin:10px 0;font-weight:bold;}
+.bar{height:8px;background:var(--locked);border-radius:4px;overflow:hidden;margin-bottom:14px;}
+.bar-fill{height:100%;background:var(--gold);width:0%;transition:width .4s;}
+.card{background:var(--locked);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:.92rem;transition:background .3s;}
+.card.unlocked{background:var(--unlocked);}
+.card .num{font-weight:bold;margin-right:6px;}
+.next{margin-top:6px;padding:8px;background:var(--gold);color:#fff;border-radius:6px;font-size:.88rem;}
+.wyglad{background:var(--locked);border-radius:8px;padding:14px;font-size:.92rem;}
+.wyglad.unlocked{background:var(--unlocked);}
+.wyglad ul{padding-left:20px;margin:8px 0;}
+.small{font-size:.75rem;opacity:.6;text-align:center;margin-top:6px;}
+#admin{display:none;background:#444;color:#fff;border-radius:10px;padding:12px;margin-top:14px;}
+#admin.show{display:block;}
+#admin h3{margin-top:0;font-size:1rem;}
+#admin button{background:#666;margin:3px;font-size:.8rem;}
+#admin button.reset{background:var(--accent);}
+</style>
+</head>
+<body>
+<h1 id="title">🕵️ AKTA LABORATORIUM HISTORII</h1>
+<div class="sub">Sprawa nr 1893/1940 — Ekipa Ratunkowa Czasu</div>
+<div class="stamp">POUFNE</div>
+
+<div class="panel">
+  <div class="entry">
+    <input id="code" type="text" placeholder="Wpisz kod z żetonu" autocomplete="off">
+    <button onclick="tryCode()">Odblokuj</button>
+  </div>
+  <div class="msg" id="msg"></div>
+</div>
+
+<div class="progress" id="progress">0 / 8 poszlak odzyskanych</div>
+<div class="bar"><div class="bar-fill" id="barFill"></div></div>
+
+<div id="cards"></div>
+
+<h2 style="font-size:1.05rem;margin-top:20px;">Opis wyglądu</h2>
+<div class="wyglad" id="wyglad">🔒 Odblokuje się po odzyskaniu wszystkich 8 poszlak.</div>
+
+<div class="small">Kliknij tytuł 5× szybko, aby otworzyć panel drużynowego.</div>
+<div id="admin"></div>
+
+<script>
+const FACTS = [
+ {code:"RADOM", text:"Urodził się 25 stycznia 1893 roku w Radomiu, ale rodzina zamieszkała w Łodzi."},
+ {code:"BRAT", text:"Jego brat Jerzy jako pierwszy w rodzinie został skautem i założył drużynę harcerską."},
+ {code:"BELGIA", text:"Uczył się w Belgii, studiował elektrotechnikę, ale musiał przerwać naukę."},
+ {code:"MATMA", text:"Był nauczycielem matematyki."},
+ {code:"WARTA", text:"W listopadzie 1918 roku pilnował ważnych miejsc w Warszawie, kiedy Polska odzyskiwała niepodległość. Był wartownikiem."},
+ {code:"POGODA", text:"Kierował stacją, w której mierzono pogodę dla pilotów.", next:"🌩️ Teraz zagrajcie w grę „Burza nadciąga” — żeby zrozumieć tę samą sztukę, którą musiał posiąść Stefan!"},
+ {code:"BURSA", text:"Prowadził dom dla chłopców, którzy nie mieli gdzie mieszkać."},
+ {code:"GROTNIKI", text:"Był komendantem Łódzkiej Chorągwi Harcerzy, a za jego czasów zbudowano harcerską stanicę w Grotnikach."}
+];
+const WYGLAD_POINTS = [
+ "Nosił mundurową czapkę z orzełkiem z przodu.",
+ "Miał krótko przycięte, ciemne włosy.",
+ "Miał charakterystyczne wąsy, podkręcone na końcach ku górze.",
+ "Nie nosił okularów.",
+ "Nie miał brody ani zarostu — tylko wąsy.",
+ "Miał owalną, pociągłą twarz.",
+ "Nosił płaszcz/mundur z wysokim, sztywnym kołnierzem.",
+ "Na czapce miał metalowy emblemat i otok nad daszkiem."
+];
+
+let state = {unlocked:[], wygladUnlocked:false};
+try{
+  const saved = localStorage.getItem('szletynski_akta');
+  if(saved) state = JSON.parse(saved);
+}catch(e){}
+
+function save(){
+  try{ localStorage.setItem('szletynski_akta', JSON.stringify(state)); }catch(e){}
+}
+
+function render(){
+  const cardsEl = document.getElementById('cards');
+  cardsEl.innerHTML = '';
+  FACTS.forEach((f,i)=>{
+    const unlocked = state.unlocked.includes(i);
+    const div = document.createElement('div');
+    div.className = 'card'+(unlocked?' unlocked':'');
+    if(unlocked){
+      div.innerHTML = '<span class="num">'+(i+1)+'.</span>'+f.text + (f.next? '<div class="next">'+f.next+'</div>':'');
+    } else {
+      div.innerHTML = '<span class="num">'+(i+1)+'.</span>🔒 Poszlaka nieodzyskana.';
+    }
+    cardsEl.appendChild(div);
+  });
+  const n = state.unlocked.length;
+  document.getElementById('progress').textContent = n+' / 8 poszlak odzyskanych';
+  document.getElementById('barFill').style.width = (n/8*100)+'%';
+
+  const wEl = document.getElementById('wyglad');
+  if(state.wygladUnlocked || n>=8){
+    state.wygladUnlocked = true;
+    wEl.className = 'wyglad unlocked';
+    wEl.innerHTML = '🎉 Wszystkie poszlaki odzyskane! Laboratorium potwierdza: możecie bezpiecznie sporządzić portret.<ul>'+
+      WYGLAD_POINTS.map(p=>'<li>'+p+'</li>').join('')+
+      '</ul><div class="next">Czas na portrety! (Jeśli jeszcze nie graliście w „Burza nadciąga” — zróbcie to najpierw.)</div>';
+  } else {
+    wEl.className = 'wyglad';
+    wEl.innerHTML = '🔒 Odblokuje się po odzyskaniu wszystkich 8 poszlak.';
+  }
+  save();
+}
+
+function tryCode(){
+  const input = document.getElementById('code');
+  const val = input.value.trim().toUpperCase().replace(/[ĄĆĘŁŃÓŚŹŻ]/g, c=>({Ą:'A',Ć:'C',Ę:'E',Ł:'L',Ń:'N',Ó:'O',Ś:'S',Ź:'Z',Ż:'Z'}[c]));
+  const msg = document.getElementById('msg');
+  const idx = FACTS.findIndex(f=>f.code===val);
+  if(idx===-1){
+    msg.className='msg err'; msg.textContent='Zły kod — spróbujcie ponownie.';
+  } else if(state.unlocked.includes(idx)){
+    msg.className='msg err'; msg.textContent='Ta poszlaka jest już odzyskana.';
+  } else {
+    state.unlocked.push(idx);
+    msg.className='msg ok'; msg.textContent='Poszlaka odzyskana!';
+    render();
+  }
+  input.value='';
+}
+document.getElementById('code').addEventListener('keydown', e=>{ if(e.key==='Enter') tryCode(); });
+
+// Panel drużynowego — 5 kliknięć w tytuł
+let clicks=0, clickTimer=null;
+document.getElementById('title').addEventListener('click', ()=>{
+  clicks++;
+  clearTimeout(clickTimer);
+  clickTimer = setTimeout(()=>{clicks=0;}, 1200);
+  if(clicks>=5){
+    clicks=0;
+    const a = document.getElementById('admin');
+    a.classList.toggle('show');
+    if(a.classList.contains('show')) renderAdmin();
+  }
+});
+function renderAdmin(){
+  const a = document.getElementById('admin');
+  let html = '<h3>Panel drużynowego (ukryty przed zuchami)</h3>';
+  FACTS.forEach((f,i)=>{
+    const done = state.unlocked.includes(i);
+    html += '<button onclick="adminUnlock('+i+')" '+(done?'disabled':'')+'>'+(done?'✓ ':'')+'Odblokuj #'+(i+1)+'</button>';
+  });
+  html += '<br><button onclick="adminWyglad()">Odblokuj opis wyglądu</button>';
+  if(confirmingReset){
+    html += ' <span style="color:#ffcc66;">Na pewno? </span><button class="reset" onclick="adminResetConfirmed()">Tak, zresetuj</button> <button onclick="adminResetCancel()">Anuluj</button>';
+  } else {
+    html += ' <button class="reset" onclick="adminReset()">Zresetuj wszystko</button>';
+  }
+  a.innerHTML = html;
+}
+function adminUnlock(i){ if(!state.unlocked.includes(i)) state.unlocked.push(i); render(); renderAdmin(); }
+function adminWyglad(){ state.wygladUnlocked = true; render(); renderAdmin(); }
+let confirmingReset = false;
+function adminReset(){ confirmingReset = true; renderAdmin(); }
+function adminResetCancel(){ confirmingReset = false; renderAdmin(); }
+function adminResetConfirmed(){ confirmingReset = false; state={unlocked:[],wygladUnlocked:false}; render(); renderAdmin(); }
+
+render();
+</script>
+</body>
+</html>
