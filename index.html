@@ -48,8 +48,8 @@ button:active{opacity:.8;}
 </style>
 </head>
 <body>
-<h1 id="title">🕵️ AKTA LABORATORIUM HISTORII</h1>
-<div class="sub">Sprawa nr 1893/1940 — Ekipa Ratunkowa Czasu</div>
+<h1 id="title">AKTA LABORATORIUM HISTORII</h1>
+<div class="sub">Sprawa nr 1893/1940</div>
 <div class="stamp">POUFNE</div>
 
 <div class="panel">
@@ -60,13 +60,13 @@ button:active{opacity:.8;}
   <div class="msg" id="msg"></div>
 </div>
 
-<div class="progress" id="progress">0 / 8 poszlak odzyskanych</div>
+<div class="progress" id="progress">0 / 8 akt odzyskanych</div>
 <div class="bar"><div class="bar-fill" id="barFill"></div></div>
 
 <div id="cards"></div>
 
 <h2 style="font-size:1.05rem;margin-top:20px;">Opis wyglądu</h2>
-<div class="wyglad" id="wyglad">🔒 Odblokuje się po odzyskaniu wszystkich 8 poszlak.</div>
+<div class="wyglad" id="wyglad">🔒 Odblokuje się po odzyskaniu wszystkich 8 akt.</div>
 
 <div class="small">Kliknij tytuł 5× szybko, aby otworzyć panel drużynowego.</div>
 <div id="admin"></div>
@@ -113,24 +113,24 @@ function render(){
     if(unlocked){
       div.innerHTML = '<span class="num">'+(i+1)+'.</span>'+f.text + (f.next? '<div class="next">'+f.next+'</div>':'');
     } else {
-      div.innerHTML = '<span class="num">'+(i+1)+'.</span>🔒 Poszlaka nieodzyskana.';
+      div.innerHTML = '<span class="num">'+(i+1)+'.</span>🔒 Zablokowane dane.';
     }
     cardsEl.appendChild(div);
   });
   const n = state.unlocked.length;
-  document.getElementById('progress').textContent = n+' / 8 poszlak odzyskanych';
+  document.getElementById('progress').textContent = n+' / 8 akt odzyskanych';
   document.getElementById('barFill').style.width = (n/8*100)+'%';
 
   const wEl = document.getElementById('wyglad');
   if(state.wygladUnlocked || n>=8){
     state.wygladUnlocked = true;
     wEl.className = 'wyglad unlocked';
-    wEl.innerHTML = '🎉 Wszystkie poszlaki odzyskane! Laboratorium potwierdza: możecie bezpiecznie sporządzić portret.<ul>'+
+    wEl.innerHTML = '🎉 Wszystkie akta odzyskane! Laboratorium potwierdza: możecie bezpiecznie sporządzić portret.<ul>'+
       WYGLAD_POINTS.map(p=>'<li>'+p+'</li>').join('')+
       '</ul><div class="next">Czas na portrety! (Jeśli jeszcze nie graliście w „Burza nadciąga” — zróbcie to najpierw.)</div>';
   } else {
     wEl.className = 'wyglad';
-    wEl.innerHTML = '🔒 Odblokuje się po odzyskaniu wszystkich 8 poszlak.';
+    wEl.innerHTML = '🔒 Odblokuje się po odzyskaniu wszystkich 8 akt.';
   }
   save();
 }
@@ -146,7 +146,7 @@ function tryCode(){
     msg.className='msg err'; msg.textContent='Ta poszlaka jest już odzyskana.';
   } else {
     state.unlocked.push(idx);
-    msg.className='msg ok'; msg.textContent='Poszlaka odzyskana!';
+    msg.className='msg ok'; msg.textContent='Dane odblokowane!';
     render();
   }
   input.value='';
